@@ -161,7 +161,7 @@ class Board(object):
         self.grid = Grid(screensize, x, y)
         self.dims = self.grid.dims
         self.states = [State(self.dims, 0, [], [])]
-        self.whose_turn = self.players[0]
+        self.cur_player = self.players[0]
         self.selector = Selector(color = SELECTOR_COLOR,
                 size = SELECTOR_SIZE,
                 grid = self.grid)
@@ -182,7 +182,7 @@ class Board(object):
     def place_stone(self):
         loc = self.selector.location
         new_stone = Stone(y = loc[0], x = loc[1],
-                player = self.whose_turn,
+                player = self.cur_player,
                 grid = self.grid)
         if self.valid_move(new_stone):
             self.next_turn(new_stone)
@@ -196,10 +196,12 @@ class Board(object):
         # FIXME
         nsurrounding = 0
         for loc in new_stone.surrounding_locations():
-            if self.stone_at(loc):
+            sur_stone = self.stone_at(loc)
+            if sur_stone and sur_stone.player != self.cur_player:
                 nsurrounding = nsurrounding + 1
         if nsurrounding == N_SURROUNDED:
             return False
+        print nsurrounding
 
         # TODO # no placing into a previous state
 
@@ -223,7 +225,7 @@ class Board(object):
                     new_state.bowl_stones.append(cstone)
 
         # switch player
-        self.whose_turn = self.players[new_state.turn % len(self.players)]
+        self.cur_player = self.players[new_state.turn % len(self.players)]
         # set the new state to the current state
         self.set_state(new_state)
 
