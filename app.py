@@ -128,8 +128,6 @@ class Board(object):
         self.selector.move(dirn)
 
     def place_stone(self):
-        # TODO put a stone where the selector is and validata/revert
-        #   switch whose turn it is
         loc = self.selector.location
         new_stone = Stone(y = loc[0], x = loc[1],
                 player = self.whose_turn,
@@ -138,8 +136,11 @@ class Board(object):
             self.stones.append(new_stone)
             self.next_turn()
 
-    def valid_move(self, stone):
-        # TODO
+    def valid_move(self, new_stone):
+        # Most of the game logic is here
+        for stone in self.stones:
+            if stone.location == new_stone.location:
+                return False
         return True
 
     def next_turn(self):
