@@ -146,8 +146,15 @@ class State(object):
     def stone_at(self, loc):
         for stone in self.board_stones:
             if stone.location == loc:
-                return True
+                return stone
         return False
+
+    def capture_stone(self, stone):
+        if stone in board_stones:
+            self.board_stones.remove(stone)
+            self.bowl_stones.remove(stone)
+        else:
+            raise Exception("Stone <{}> isn't on the board")
 
     def draw(self, screen):
         for stone in self.board_stones:
@@ -193,20 +200,22 @@ class Board(object):
             return False
 
         # no placing in a surrounded position
-        # FIXME
-        nsurrounding = 0
-        for loc in new_stone.surrounding_locations():
-            sur_stone = self.stone_at(loc)
-            if sur_stone and sur_stone.player != self.cur_player:
-                nsurrounding = nsurrounding + 1
-        if nsurrounding == N_SURROUNDED:
+        state = copy(self.get_state())
+        state.board_stones = state.board_stones + [new_stone]
+        chain = self.get_chain(new_stone, state)
+        if self.is_surrounded(chain):
             return False
-        print nsurrounding
 
-        # TODO # no placing into a previous state
+        # no placing into a previous state (note that state has new_stone in it)
+        cstones = self.capturable_stones_next_to(new_stone, state)
+        for cstone in cstones:
+            state.capture_stone(cstone)
+
+        if state in self.states:
+            return False
 
         # otherwise valid move
-        return True
+        return state
 
     def next_turn(self, new_stone):
         # make a new state
@@ -217,21 +226,53 @@ class Board(object):
                 old_state.bowl_stones)
 
         # move captured stones into the bin
-        captured_stones = self.capture_stones(new_state, new_stone)
-        for cstone in captured_stones:
-            for bstone in new_state.board_stones:
-                if cstone == bstone:
-                    new_state.board_stones.remove(bstone)
-                    new_state.bowl_stones.append(cstone)
+        capturable_stones = self.capturable_stones_next_to(new_stone, new_state)
+        for cstone in capturable_stones:
+            state.capture_stone(cstone)
 
         # switch player
         self.cur_player = self.players[new_state.turn % len(self.players)]
         # set the new state to the current state
         self.set_state(new_state)
 
-    def capture_stones(self, state, stone):
-        # TODO
-        return []
+    def capturable_stones_next_to(self, stone, state):
+        assert type(stone) == Stone
+        assert type(state) == State
+        capturable_stones = []
+        for loc in stone.surrounding_locations():
+            if state.stone_at(loc):
+                stone = state.stone_at(loc)
+                if stone.player != self.cur_player:
+                    chain = self.get_chain(stone, state)
+                    if self.is_surrounded(chain):
+                        for cstone in chain:
+                            capturable_stones.append(cstone)
+        return capturable_stones
+
+    def is_surrounded(self, chain):
+        # Return True if all stones in chain have stones all around them
+        for stone in chain:
+            for loc in stone.surrounding_locations():
+                if not self.stone_at(loc):
+                    return False
+        return True
+
+    def get_chain(self, stone, state):
+        stones_to_check = [stone]
+        checked_stones = []
+        chain = [stone]
+        while len(stones_to_check) > 0:
+            print "checking stone"
+            check_stone = stones_to_check.pop()
+            checked_stones.append(check_stone)
+            if check_stone.player == stone.player:
+                for loc in check_stone.surrounding_locations():
+                    if self.stone_at(loc):
+                        possible_check_stone = self.stone_at(loc)
+                        if possible_check_stone.player == stone.player:
+                            if possible_check_stone not in checked_stones:
+                                stones_to_check.append(possible_check_stone)
+        return chain
 
     def draw(self, screen):
         self.grid.draw(screen)
