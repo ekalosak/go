@@ -1,3 +1,4 @@
 Oct 17, 2015
     Make grid draw, selector draw, stones draw, state record
     Check for state validity, add pass to move options
+    add a scoreboard
