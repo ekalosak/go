@@ -7,9 +7,10 @@ import pandas as pd
 import pygame as pg
 import pdb
 
+STONE_SIZE = 5
 SCREEN_SIZE = 450, 450
 REFRESH_RATE = 60
-WHITE, BLACK = 'white', 'black'
+WHITE, BLACK = (0, 0, 0), (255, 255, 255)
 LINE_COLOR = 0, 0, 0
 LINE_WIDTH = 2
 SELECTOR_COLOR = 255, 0, 0
@@ -28,9 +29,17 @@ class Player(object):
 
 class Stone(object):
 
-    def __init__(self, x, y, color):
-        self.location = x, y
-        self.color = color
+    def __init__(self, y, x, player, grid):
+        self.location = y, x
+        self.player = player
+        self.size = STONE_SIZE
+        self.grid = grid
+
+    def draw(self, screen):
+        pg.draw.circle(screen,
+                self.player.color,
+                self.grid.get_point(*self.location),
+                self.size)
 
 class Grid(object):
 
@@ -75,22 +84,22 @@ class Selector(object):
     def __init__(self, color, size, grid):
         self.color = color
         self.size = size
-        self.location = 0, 0
+        self.location = [0, 0]
         self.grid = grid
 
     def move(self, dirn):
 
-        if dirn == pg.K_UP:
+        if dirn == pg.K_LEFT:
             if self.location[0] - 1 >= 0:
                 self.location[0] = self.location[0] - 1
-        elif dirn == pg.K_DOWN:
-            if self.location[0] + 1 <= self.dims[0]:
+        elif dirn == pg.K_RIGHT:
+            if self.location[0] + 1 < self.grid.dims[0]:
                 self.location[0] = self.location[0] + 1
-        elif dirn == pg.K_LEFT:
+        elif dirn == pg.K_UP:
             if self.location[1] - 1 >= 0:
                 self.location[1] = self.location[1] - 1
-        elif dirn == pg.K_RIGHT:
-            if self.location[1] + 1 >= self.dims[1]:
+        elif dirn == pg.K_DOWN:
+            if self.location[1] + 1 < self.grid.dims[1]:
                 self.location[1] = self.location[1] + 1
 
     def draw(self, screen):
@@ -107,11 +116,13 @@ class Board(object):
         self.grid = Grid(screensize, x, y)
         self.dims = self.grid.dims
         self.states = []
-        self.state = np.zeros(self.dims)
+        self.state = np.empty(shape = self.dims,
+                dtype = Stone)
         self.whose_turn = self.players[0]
         self.selector = Selector(color = SELECTOR_COLOR,
                 size = SELECTOR_SIZE,
                 grid = self.grid)
+        self.stones = []
 
     def move_select(self, dirn):
         self.selector.move(dirn)
@@ -119,12 +130,29 @@ class Board(object):
     def place_stone(self):
         # TODO put a stone where the selector is and validata/revert
         #   switch whose turn it is
-        pdb.set_trace()
+        loc = self.selector.location
+        new_stone = Stone(y = loc[0], x = loc[1],
+                player = self.whose_turn,
+                grid = self.grid)
+        if self.valid_move(new_stone):
+            self.stones.append(new_stone)
+            self.next_turn()
+
+    def valid_move(self, stone):
+        # TODO
+        return True
+
+    def next_turn(self):
+        if self.whose_turn == self.players[0]:
+            self.whose_turn = self.players[1]
+        elif self.whose_turn == self.players[1]:
+            self.whose_turn = self.players[0]
 
     def draw(self, screen):
         self.grid.draw(screen)
+        for stone in self.stones:
+            stone.draw(screen)
         self.selector.draw(screen)
-        # TODO draw stones
 
     def validate_selector(self):
         pass
@@ -150,37 +178,31 @@ def main():
     board = Board(screen.get_size())
 
     while 1:
-
         clock.tick(REFRESH_RATE)
+        for event in pg.event.get():
 
-        if pg.key.get_focused():
-            for event in pg.event.get():
+            if event.type == pg.QUIT:
+                sys.exit()
 
-                if event.type == pg.QUIT:
-                    sys.exit()
+            keypress = pg.key.get_pressed()
 
-                elif event.type == pg.KEYUP:
+            # Move the selector
+            if keypress[pg.K_UP]:
+                board.move_select(pg.K_UP)
+            elif keypress[pg.K_DOWN]:
+                board.move_select(pg.K_DOWN)
+            elif keypress[pg.K_LEFT]:
+                board.move_select(pg.K_LEFT)
+            elif keypress[pg.K_RIGHT]:
+                board.move_select(pg.K_RIGHT)
 
-                    keypress = pg.key.get_pressed()
+            # Enter a move
+            elif keypress[pg.K_SPACE]:
+                board.place_stone()
 
-                    # Move the selector
-                    if keypress[pg.K_UP]:
-                        print "pressed up"
-                        board.move_select(pg.K_UP)
-                    elif keypress[pg.K_DOWN]:
-                        board.move_select(pg.K_DOWN)
-                    elif keypress[pg.K_LEFT]:
-                        board.move_select(pg.K_LEFT)
-                    elif keypress[pg.K_RIGHT]:
-                        board.move_select(pg.K_RIGHT)
-
-                    # Enter a move
-                    elif keypress[pg.K_SPACE]:
-                        board.place_stone()
-
-                    # Quit
-                    elif keypress[pg.K_ESCAPE]:
-                        sys.exit(1)
+            # Quit
+            elif keypress[pg.K_ESCAPE]:
+                sys.exit(1)
 
         screen.fill(board_color)
         board.draw(screen)
