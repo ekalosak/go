@@ -18,7 +18,6 @@ LINE_COLOR = 0, 0, 0
 LINE_WIDTH = 2
 SELECTOR_COLOR = 255, 0, 0
 SELECTOR_SIZE = LINE_WIDTH + 2
-N_SURROUNDED = 4
 
 class Player(object):
 
@@ -26,6 +25,7 @@ class Player(object):
         self.color = color
         self.score = 0
         self.captured = []
+        log.debug("created player: <{}>".format(self))
 
     def validate(self):
         for stone in self.captured:
@@ -38,12 +38,7 @@ class Stone(object):
         self.player = player
         self.size = STONE_SIZE
         self.grid = grid
-
-    def draw(self, screen):
-        pg.draw.circle(screen,
-                self.player.color,
-                self.grid.get_point(*self.location[::-1]),
-                self.size)
+        log.debug("created stone: <{}>".format(self))
 
     def surrounding_locations(self):
         locs = []
@@ -66,7 +61,15 @@ class Stone(object):
                     y < self.grid.dims[0]:
                 locs.append((y, x))
 
+        log.debug("the points surrounding <{}> are <{}>".format(
+            self.location, locs))
         return locs
+
+    def draw(self, screen):
+        pg.draw.circle(screen,
+                self.player.color,
+                self.grid.get_point(*self.location[::-1]),
+                self.size)
 
 class Grid(object):
 
@@ -74,6 +77,7 @@ class Grid(object):
         self.dims = x, y
         self.screensize = screensize
         self.points = self._calculate_grid_points()
+        log.debug("created grid: <{}>".format(self))
 
     def _calculate_grid_points(self):
 
@@ -86,10 +90,16 @@ class Grid(object):
             points[y, x, 0] = py
             points[y, x, 1] = px
 
+        log.debug("calculated grid points: <{}>".format(
+            np.shape(points)))
         return points
 
     def get_point(self, y, x):
-        return [int(a) for a in self.points[y, x]]
+        point = [int(a) for a in self.points[y, x]]
+        # NOTE this gets called in a draw loop so it's debugging spam
+        # log.debug("point <{}> is located at <{}>".format(
+        #     (y, x), point))
+        return point
 
     def draw(self, screen):
 
@@ -113,6 +123,7 @@ class Selector(object):
         self.size = size
         self.location = self.y, self.x = [0, 0]
         self.grid = grid
+        log.debug("created selector: <{}>".format(self))
 
     def move(self, dirn):
 
@@ -130,6 +141,8 @@ class Selector(object):
                 self.x = self.x + 1
 
         self.location = self.y, self.x
+        log.debug("moved selector in direction <{}> to <{}>".format(
+            pg.key.name(dirn), self.location))
 
     def draw(self, screen):
         pg.draw.circle(screen,
@@ -144,19 +157,28 @@ class State(object):
         self.turn = turn
         self.board_stones = board_stones
         self.bowl_stones = bowl_stones
+        log.debug("created state: <{}>".format(self))
+
+    def get_stones(self):
+        return self.board_stones + self.bowl_stones
 
     def stone_at(self, loc):
         for stone in self.board_stones:
             if stone.location == loc:
+                log.debug("there is a stone at <{}>".format(loc))
                 return stone
+        log.debug("there is not a stone at <{}>".format(loc))
         return False
 
     def capture_stone(self, stone):
         if stone in board_stones:
             self.board_stones.remove(stone)
             self.bowl_stones.remove(stone)
+            log.debug("<{}> has been captured".format(stone))
         else:
-            raise Exception("Stone <{}> isn't on the board")
+            msg = "stone <{}> isn't on the board".format(stone)
+            log.error(msg)
+            raise Exception(msg)
 
     def draw(self, screen):
         for stone in self.board_stones:
@@ -174,6 +196,12 @@ class Board(object):
         self.selector = Selector(color = SELECTOR_COLOR,
                 size = SELECTOR_SIZE,
                 grid = self.grid)
+        log.debug("created board: <{}>".format(self))
+
+    def undo(self):
+        log.warning("undo not yet implemented")
+    def pass_move(self):
+        log.warning("pass_move not yet implemented")
 
     def set_state(self, state):
         self.states.append(state)
@@ -193,12 +221,17 @@ class Board(object):
         new_stone = Stone(y = loc[0], x = loc[1],
                 player = self.cur_player,
                 grid = self.grid)
-        if self.valid_move(new_stone):
-            self.next_turn(new_stone)
+
+        state = self.valid_move(new_stone)
+        if state:
+            state.turn = state.turn + 1
+            self.next_turn(state)
 
     def valid_move(self, new_stone):
         # avoid collisions
         if self.stone_at(new_stone.location):
+            log.debug("move <{}> is invalid due to collision".format(
+                new_stone))
             return False
 
         # no placing in a surrounded position
@@ -206,44 +239,43 @@ class Board(object):
         state.board_stones = state.board_stones + [new_stone]
         chain = self.get_chain(new_stone, state)
         if self.is_surrounded(chain):
+            log.debug("move <{}> is invalid because it is surrounded".format(
+                new_stone))
             return False
 
-        # no placing into a previous state (note that state has new_stone in it)
+        # capture stones if there are any capturable
         cstones = self.capturable_stones_next_to(new_stone, state)
+        if cstones: log.debug("capturing stones: <{}>".format(cstones))
+        else: log.debug("no stones to capture")
         for cstone in cstones:
             state.capture_stone(cstone)
 
+        # make sure it's not a repeat move
         if state in self.states:
+            log.debug("move <{}> is invalid due to repeat state <{}>".format(
+                new_stone, self.states(self.states.index(state))))
             return False
 
         # otherwise valid move
+        log.debug("<{}> is a valid move".format(new_stone))
         return state
 
-    def next_turn(self, new_stone):
-        # make a new state
-        old_state = self.get_state()
-        new_state = State(self.dims,
-                old_state.turn + 1,
-                old_state.board_stones + [new_stone],
-                old_state.bowl_stones)
-
-        # move captured stones into the bin
-        capturable_stones = self.capturable_stones_next_to(new_stone, new_state)
-        for cstone in capturable_stones:
-            state.capture_stone(cstone)
-
+    def next_turn(self, next_state):
         # switch player
-        self.cur_player = self.players[new_state.turn % len(self.players)]
+        self.cur_player = self.players[next_state.turn % len(self.players)]
         # set the new state to the current state
-        self.set_state(new_state)
+        self.set_state(next_state)
+        log.debug("starting turn <{}> with player <{}>".format(
+            next_state.turn, self.cur_player))
+        log.debug("-" * 40)
 
     def capturable_stones_next_to(self, stone, state):
         assert type(stone) == Stone
         assert type(state) == State
         capturable_stones = []
         for loc in stone.surrounding_locations():
-            if state.stone_at(loc):
-                stone = state.stone_at(loc)
+            stone = state.stone_at(loc)
+            if stone:
                 if stone.player != self.cur_player:
                     chain = self.get_chain(stone, state)
                     if self.is_surrounded(chain):
@@ -333,10 +365,18 @@ def main(log):
             elif keypress[pg.K_RIGHT]:
                 board.move_select(pg.K_RIGHT)
 
-            # Enter a move
+            # Place a stone
             elif keypress[pg.K_SPACE]:
                 log.debug("placing stone")
                 board.place_stone()
+
+            # TODO
+            elif keypress[pg.K_p]:
+                log.debug("passing")
+                board.pass_move()
+            elif keypress[pg.K_u]:
+                log.debug("undoing")
+                board.undo()
 
             # Quit
             elif keypress[pg.K_ESCAPE]:
