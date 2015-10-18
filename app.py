@@ -232,9 +232,9 @@ class State(object):
         return False
 
     def capture_stone(self, stone):
-        if stone in board_stones:
+        if stone in self.board_stones:
             self.board_stones.remove(stone)
-            self.bowl_stones.remove(stone)
+            self.bowl_stones.append(stone)
             log.debug("<{}> has been captured".format(stone))
         else:
             msg = "stone <{}> isn't on the board".format(stone)
@@ -318,7 +318,7 @@ class Board(object):
         state = copy(self.get_state())
         state.board_stones = state.board_stones + [new_stone]
         chain = self.get_chain(new_stone, state)
-        if self.is_surrounded(chain):
+        if self.is_surrounded(chain, state):
             log.debug("move <{}> is invalid because it is surrounded".format(
                 new_stone))
             return False
@@ -345,9 +345,9 @@ class Board(object):
         self.cur_player = self.players[next_state.turn % len(self.players)]
         # set the new state to the current state
         self.set_state(next_state)
+        log.debug("-" * 40)
         log.debug("starting turn <{}> with player <{}>".format(
             next_state.turn, self.cur_player))
-        log.debug("-" * 40)
 
     def capturable_stones_next_to(self, stone, state):
         assert type(stone) == Stone
@@ -358,18 +358,18 @@ class Board(object):
             if stone:
                 if stone.player != self.cur_player:
                     chain = self.get_chain(stone, state)
-                    if self.is_surrounded(chain):
+                    if self.is_surrounded(chain, state):
                         for cstone in chain:
                             capturable_stones.append(cstone)
         log.debug("the capturable stones next to <{}> are: <{}>".format(
             stone, capturable_stones))
         return capturable_stones
 
-    def is_surrounded(self, chain):
+    def is_surrounded(self, chain, potential_state):
         # Return True if all stones in chain have stones all around them
         for stone in chain:
             for loc in stone.surrounding_locations():
-                if not self.stone_at(loc):
+                if not potential_state.stone_at(loc):
                     log.debug("chain with <{}> is not surrounded".format(
                         chain[0]))
                     return False
@@ -386,8 +386,8 @@ class Board(object):
             checked_stones.append(check_stone)
             if check_stone.player == stone.player:
                 for loc in check_stone.surrounding_locations():
-                    if self.stone_at(loc):
-                        possible_check_stone = self.stone_at(loc)
+                    possible_check_stone = self.stone_at(loc)
+                    if possible_check_stone:
                         if possible_check_stone.player == stone.player:
                             if possible_check_stone not in checked_stones:
                                 chain.append(possible_check_stone)
