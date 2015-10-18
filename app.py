@@ -213,11 +213,12 @@ class State(object):
             msg = "Received type <{}>, expected <{}>".format(
                     type(other), State)
             raise TypeError(msg)
-        o_stones = other.get_stones()
-        for stone in self.get_stones():
-            if stone not in o_stones:
+        for stone in self.bowl_stones:
+            if stone not in other.bowl_stones:
                 return False
-        assert self.turn == other.turn
+        for stone in self.board_stones:
+            if stone not in other.board_stones:
+                return False
         return True
 
     def get_stones(self):
@@ -333,7 +334,7 @@ class Board(object):
         # make sure it's not a repeat move
         if state in self.states:
             log.debug("move <{}> is invalid due to repeat state <{}>".format(
-                new_stone, self.states(self.states.index(state))))
+                new_stone, self.states[self.states.index(state)]))
             return False
 
         # otherwise valid move
