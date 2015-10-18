@@ -1,12 +1,17 @@
 Oct 17, 2015
-    Make grid draw, selector draw, stones draw, state record
-    Check for state validity, add pass to move options
+    record states
+    add pass to move options
     add a scoreboard
-    add a logger
-    refactor much of Board functionality to utils.py
+    refactor much of Board functionality to algorithms.py
     add validation functions to classes
     add __repr__
     overwride __eq__
     fix bug where it thinks a move is invalid if a stone is surrounded by its
         own allies
     fix non-capture bug
+    refactor many functions to not have such sloppy objet access
+
+    DONE:
+        Make grid draw, selector draw, stones draw
+        check for state validity
+        add a logger
