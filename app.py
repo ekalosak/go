@@ -24,12 +24,14 @@ class Player(object):
     def __init__(self, color):
         self.color = color
         self.score = 0
-        self.captured = []
         log.debug("created player: <{}>".format(self))
 
+    def __repr__(self):
+        msg = "Player: color={}, score={}".format(self.color, self.score)
+        return msg
+
     def validate(self):
-        for stone in self.captured:
-            assert type(stone) == Stone
+        pass
 
 class Stone(object):
 
@@ -39,6 +41,11 @@ class Stone(object):
         self.size = STONE_SIZE
         self.grid = grid
         log.debug("created stone: <{}>".format(self))
+
+    def __repr__(self):
+        msg = "Stone: location={}, player={}"
+        msg = msg.format(self.location, self.player)
+        return msg
 
     def surrounding_locations(self):
         locs = []
@@ -78,6 +85,10 @@ class Grid(object):
         self.screensize = screensize
         self.points = self._calculate_grid_points()
         log.debug("created grid: <{}>".format(self))
+
+    def __repr__(self):
+        msg = "Grid: dimensions={}".format(self.dims)
+        return msg
 
     def _calculate_grid_points(self):
 
@@ -125,6 +136,10 @@ class Selector(object):
         self.grid = grid
         log.debug("created selector: <{}>".format(self))
 
+    def __repr__(self):
+        msg = "Selector: location={}".format(self.location)
+        return msg
+
     def move(self, dirn):
 
         if dirn == pg.K_UP:
@@ -152,12 +167,16 @@ class Selector(object):
 
 class State(object):
 
-    def __init__(self, dims, turn, board_stones, bowl_stones):
-        self.dims = dims
+    def __init__(self, board_stones, bowl_stones):
         self.turn = turn
         self.board_stones = board_stones
         self.bowl_stones = bowl_stones
         log.debug("created state: <{}>".format(self))
+
+    def __repr__(self):
+        msg = "State: turn={}, nstones={}"
+        msg = msg.format(self.turn, len(self.get_stones()))
+        return msg
 
     def get_stones(self):
         return self.board_stones + self.bowl_stones
@@ -191,12 +210,31 @@ class Board(object):
         self.players = Player(WHITE), Player(BLACK)
         self.grid = Grid(screensize, x, y)
         self.dims = self.grid.dims
-        self.states = [State(self.dims, 0, [], [])]
+        self.states = [State(0, [], [])]
         self.cur_player = self.players[0]
         self.selector = Selector(color = SELECTOR_COLOR,
                 size = SELECTOR_SIZE,
                 grid = self.grid)
         log.debug("created board: <{}>".format(self))
+
+    def __repr__(self):
+        msg = "Board: dimensions={}, nplayers={}, nstates={}, " +\
+                "curplayer={}, selector at {}"
+        msg = msg.format(self.dims, len(self.players), len(self.states),
+                self.cur_player, self.selector.location)
+        return msg
+
+    def __eq__(self, other):
+        if type(other) != Board:
+            msg = "Received type <{}>, expected <{}>".format(
+                    type(other), Board)
+            raise TypeError(msg)
+        eq_relations = [self.grid == other.grid,
+                self.players == other.players,
+                self.cur_player == other.cur_player,
+                self.get_state() == other.get_state(),
+                self.selector == other.selector]
+        return all(eq_relations)
 
     def undo(self):
         log.warning("undo not yet implemented")
