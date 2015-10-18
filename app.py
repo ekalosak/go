@@ -27,8 +27,15 @@ class Player(object):
         log.debug("created player: <{}>".format(self))
 
     def __repr__(self):
-        msg = "Player: color={}, score={}".format(self.color, self.score)
+        msg = "<Player: color={}, score={}>".format(self.color, self.score)
         return msg
+
+    def __eq__(self, other):
+        if type(other) != Player:
+            msg = "<Received type <{}>, expected <{}>>".format(
+                    type(other), Player)
+            raise TypeError(msg)
+        return self.color == other.color
 
     def validate(self):
         pass
@@ -43,9 +50,18 @@ class Stone(object):
         log.debug("created stone: <{}>".format(self))
 
     def __repr__(self):
-        msg = "Stone: location={}, player={}"
+        msg = "<Stone: location={}, player={}>"
         msg = msg.format(self.location, self.player)
         return msg
+
+    def __eq__(self, other):
+        if type(other) != Stone:
+            msg = "Received type <{}>, expected <{}>".format(
+                    type(other), Stone)
+            raise TypeError(msg)
+        eq_relations = [self.location == other.location,
+                self.player == self.player]
+        return all(eq_relations)
 
     def surrounding_locations(self):
         locs = []
@@ -87,8 +103,15 @@ class Grid(object):
         log.debug("created grid: <{}>".format(self))
 
     def __repr__(self):
-        msg = "Grid: dimensions={}".format(self.dims)
+        msg = "<Grid: dimensions={}>".format(self.dims)
         return msg
+
+    def __eq__(self, other):
+        if type(other) != Grid:
+            msg = "Received type <{}>, expected <{}>".format(
+                    type(other), Grid)
+            raise TypeError(msg)
+        return self.dims == other.dims
 
     def _calculate_grid_points(self):
 
@@ -137,8 +160,15 @@ class Selector(object):
         log.debug("created selector: <{}>".format(self))
 
     def __repr__(self):
-        msg = "Selector: location={}".format(self.location)
+        msg = "<Selector: location={}>".format(self.location)
         return msg
+
+    def __eq__(self, other):
+        if type(other) != Selector:
+            msg = "Received type <{}>, expected <{}>".format(
+                    type(other), Selector)
+            raise TypeError(msg)
+        return self.location == other.location
 
     def move(self, dirn):
 
@@ -167,16 +197,28 @@ class Selector(object):
 
 class State(object):
 
-    def __init__(self, board_stones, bowl_stones):
+    def __init__(self, turn, board_stones, bowl_stones):
         self.turn = turn
         self.board_stones = board_stones
         self.bowl_stones = bowl_stones
         log.debug("created state: <{}>".format(self))
 
     def __repr__(self):
-        msg = "State: turn={}, nstones={}"
+        msg = "<State: turn={}, nstones={}>"
         msg = msg.format(self.turn, len(self.get_stones()))
         return msg
+
+    def __eq__(self, other):
+        if type(other) != State:
+            msg = "Received type <{}>, expected <{}>".format(
+                    type(other), State)
+            raise TypeError(msg)
+        o_stones = other.get_stones()
+        for stone in self.get_stones():
+            if stone not in o_stones:
+                return False
+        assert self.turn == other.turn
+        return True
 
     def get_stones(self):
         return self.board_stones + self.bowl_stones
@@ -218,8 +260,8 @@ class Board(object):
         log.debug("created board: <{}>".format(self))
 
     def __repr__(self):
-        msg = "Board: dimensions={}, nplayers={}, nstates={}, " +\
-                "curplayer={}, selector at {}"
+        msg = "<Board: dimensions={}, nplayers={}, nstates={}, " +\
+                "curplayer={}, selector at {}>"
         msg = msg.format(self.dims, len(self.players), len(self.states),
                 self.cur_player, self.selector.location)
         return msg
