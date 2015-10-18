@@ -10,7 +10,7 @@ import pdb
 
 import utils
 
-STONE_SIZE = 5
+STONE_SIZE = 10
 SCREEN_SIZE = 450, 450
 REFRESH_RATE = 60
 WHITE, BLACK = (0, 0, 0), (255, 255, 255)
@@ -249,6 +249,8 @@ class Board(object):
                     if self.is_surrounded(chain):
                         for cstone in chain:
                             capturable_stones.append(cstone)
+        log.debug("the capturable stones next to <{}> are: <{}>".format(
+            stone, capturable_stones))
         return capturable_stones
 
     def is_surrounded(self, chain):
@@ -256,15 +258,18 @@ class Board(object):
         for stone in chain:
             for loc in stone.surrounding_locations():
                 if not self.stone_at(loc):
+                    log.debug("chain with <{}> is not surrounded".format(
+                        chain[0]))
                     return False
+        log.debug("chain with <{}> is surrounded".format(chain[0]))
         return True
 
     def get_chain(self, stone, state):
+        log.debug("getting chain starting at <{}>".format(stone))
         stones_to_check = [stone]
         checked_stones = []
         chain = [stone]
         while len(stones_to_check) > 0:
-            print "checking stone"
             check_stone = stones_to_check.pop()
             checked_stones.append(check_stone)
             if check_stone.player == stone.player:
@@ -273,7 +278,12 @@ class Board(object):
                         possible_check_stone = self.stone_at(loc)
                         if possible_check_stone.player == stone.player:
                             if possible_check_stone not in checked_stones:
+                                chain.append(possible_check_stone)
                                 stones_to_check.append(possible_check_stone)
+
+        log.debug("calculated chain connected to <{}>: <{}>".format(
+            stone, chain))
+        log.debug("chain length: <{}>".format(len(chain)))
         return chain
 
     def draw(self, screen):
