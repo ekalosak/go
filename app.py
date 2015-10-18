@@ -8,6 +8,8 @@ import pandas as pd
 import pygame as pg
 import pdb
 
+import utils
+
 STONE_SIZE = 5
 SCREEN_SIZE = 450, 450
 REFRESH_RATE = 60
@@ -280,11 +282,12 @@ class Board(object):
         state.draw(screen)
         self.selector.draw(screen)
 
-def test():
-    print "Passed tests!!"
+def test(log):
+    log.debug("no tests")
 
-def main():
+def main(log):
 
+    log.debug("initializing app")
     pg.init()
 
     size = width, height = SCREEN_SIZE
@@ -296,14 +299,19 @@ def main():
     clock = pg.time.Clock()
     board = Board(screen.get_size())
 
+    log.debug("starting main loop")
     while 1:
         clock.tick(REFRESH_RATE)
         for event in pg.event.get():
 
             if event.type == pg.QUIT:
+                log.debug("quitting")
                 sys.exit()
 
             keypress = pg.key.get_pressed()
+            if sum(keypress) > 0:
+                key_name = pg.key.name(keypress.index(1))
+                log.debug("key pressed: <{}>".format(key_name))
 
             # Move the selector
             if keypress[pg.K_UP]:
@@ -317,10 +325,12 @@ def main():
 
             # Enter a move
             elif keypress[pg.K_SPACE]:
+                log.debug("placing stone")
                 board.place_stone()
 
             # Quit
             elif keypress[pg.K_ESCAPE]:
+                log.debug("quitting")
                 sys.exit(1)
 
         screen.fill(board_color)
@@ -328,5 +338,6 @@ def main():
         pg.display.flip()
 
 if __name__ == '__main__':
-    test()
-    main()
+    log = utils.make_logger('go-app', verbose = True)
+    test(log)
+    main(log)
