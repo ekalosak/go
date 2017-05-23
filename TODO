@@ -3,7 +3,9 @@ Priority *, **, ***
 May 23, 2017
     * write unit tests for utils.py
     * get basic stone placement working for play_in_term
+    * get game logic working for play_in_term
     *** save, load games
+    ** make class Move()
 
 Oct 17, 2015
     * check that I'm actually recording states
