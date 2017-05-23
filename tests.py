@@ -1,10 +1,13 @@
 # uses nosetests
 
 # Import subroutines to test
-from play_in_terminal import endgame
+from play_in_terminal import endgame, valid_move
 
 # Import constants used
 from play_in_terminal import PASS
+
+# Import requisite 3rd party libraries
+from numpy import array
 
 class TestEndgame:
 
@@ -35,8 +38,11 @@ class TestValidMove:
         pass
 
     def test_double_occupation(self):
-        # TODO
-        pass
+        board = array([[1, 0], [0, 0]]) # stone only in upper left corner
+        move1 = (1, [1,1]) # player 1 tries to play in upper left
+        move2 = (2, [1,1]) # player 2 tries to play in upper left
+        assert(not valid_move(move1, board))
+        assert(not valid_move(move2, board))
 
     def test_no_state_reversal(self):
         # TODO

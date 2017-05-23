@@ -64,6 +64,17 @@ def endgame(moves, nplayers):
     print(last_moves)
     return(all([l[1] == PASS for l in last_moves]))
 
+def liberties(move, board):
+    # TODO
+    # Return the number of liberties of a stone placed on the board
+    #   more or less depth first search of a chain of stones connected to move
+    pass
+
+def captured(move, board):
+    # TODO
+    # Return the stones captured by playing <move> on <board>
+    pass
+
 def valid_move(move, board):
 
     ## Determine whether <move> is valid
@@ -73,8 +84,21 @@ def valid_move(move, board):
     # Output
     #   valid : (bool) whther the move is valid or not
 
-    # TODO
     # Occupied spot cannot be twice occupied
+    move_loc = [m - 1 for m in move[1]]
+    subboard = board
+    for i in range(DIMENSIONS - 1):
+        subboard = subboard[move_loc[i], :]
+    board_at_loc = subboard[move_loc[DIMENSIONS - 1]]
+
+    print(board)
+    print(move)
+    print(board_at_loc)
+
+    if(board_at_loc != 0):
+        return False
+
+    # TODO
     # Cannot kill self or own stones
 
     # Cannot return board to previous state (NOTE not implemented)
