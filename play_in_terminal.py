@@ -1,7 +1,7 @@
 ### Play the game of Go in your terminal
 # Author: Eric Kalosa-Kenyon
 # Date: May 24, 2017
-# License: BSD
+# License: MIT
 ###
 
 ### BEGIN: Code
