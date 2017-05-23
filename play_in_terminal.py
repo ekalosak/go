@@ -64,9 +64,22 @@ def endgame(moves, nplayers):
     print(last_moves)
     return(all([l[1] == PASS for l in last_moves]))
 
-def valid_move():
+def valid_move(move, board):
+
+    ## Determine whether <move> is valid
+    # Input
+    #   move : (int, [int, int]) player plays stone at [int, int, ..]
+    #   board : (np.array) the current state of the board
+    # Output
+    #   valid : (bool) whther the move is valid or not
+
     # TODO
-    return False
+    # Occupied spot cannot be twice occupied
+    # Cannot kill self or own stones
+
+    # Cannot return board to previous state (NOTE not implemented)
+
+    return True
 
 ## Main loop
 

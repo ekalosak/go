@@ -28,5 +28,16 @@ class TestEndgame:
         moves = [(1, [1,1]), (2, [1,2]), (1, PASS), (2, PASS)]
         assert(endgame(moves, 2)) # a pass with one player ends the game
 
-def test_valid_move():
-    pass
+class TestValidMove:
+
+    def test_surrounded_stones(self):
+        # TODO
+        pass
+
+    def test_double_occupation(self):
+        # TODO
+        pass
+
+    def test_no_state_reversal(self):
+        # TODO
+        pass
