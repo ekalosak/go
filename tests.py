@@ -1,7 +1,7 @@
 # uses nosetests
 
 # Import subroutines to test
-from play_in_terminal import endgame, valid_move
+from play_in_terminal import endgame, valid_move, neighbors, liberties
 
 # Import constants used
 from play_in_terminal import PASS
@@ -17,25 +17,29 @@ class TestEndgame:
     #       denoting the position of the stone placed
 
     def test_trivial_endgame(self):
-        # First, trivial case
         moves = [(1, PASS)]
         assert(endgame(moves, 1)) # a pass with one player ends the game
 
     def test_trivial_endgame2(self):
-        # Another trivial case
         moves = [(1, PASS), (2, PASS)]
-        assert(endgame(moves, 2)) # a pass with one player ends the game
+        assert(endgame(moves, 2)) # two passes with two players ends the game
 
     def test_regular_endgame(self):
-        # A final case with some play before it
+        # A case with some play before it
         moves = [(1, [1,1]), (2, [1,2]), (1, PASS), (2, PASS)]
-        assert(endgame(moves, 2)) # a pass with one player ends the game
+        assert(endgame(moves, 2)) # game ends when everyone passes
+
+    def test_not_endgame(self):
+        # A failure case with some play before it
+        moves = [(1, [1,1]), (2, [1,2]), (1, PASS), (2, [2,2])]
+        assert(not endgame(moves, 2)) # game ends when everyone passes
+
 
 class TestValidMove:
 
     def test_surrounded_stones(self):
         # TODO
-        pass
+        assert(False)
 
     def test_double_occupation(self):
         board = array([[1, 0], [0, 0]]) # stone only in upper left corner
@@ -46,4 +50,87 @@ class TestValidMove:
 
     def test_no_state_reversal(self):
         # TODO
-        pass
+        assert(False)
+
+class TestLiberties:
+
+    def test_single_stone(self):
+        board = array([[0,0,0],
+                       [0,0,0],
+                       [0,0,0]])
+
+        move = (1, [2,2]) # player 1 placing a stone at (2,2) the center
+        assert(liberties(move, board) == 4)
+
+        move = (1, [3,2])
+        assert(liberties(move, board) == 3)
+
+        move = (1, [1,1])
+        assert(liberties(move, board) == 2)
+
+    def test_chain_stones(self):
+
+    def test_complicated_chain(self)
+    #TODO more tests here
+
+class TestNeighbors:
+
+    def test_corners(self):
+        board = array([[0,0,0],
+                       [0,0,0],
+                       [0,0,0]])
+        move1 = (1, [1,1])
+        move2 = (1, [1,3])
+        move3 = (1, [3,1])
+        move4 = (1, [3,3])
+
+        ns1 = neighbors(move1, board)
+        ns2 = neighbors(move2, board)
+        ns3 = neighbors(move3, board)
+        ns4 = neighbors(move4, board)
+
+        tn1 = [[1,2],[2,1]]
+        tn2 = [[1,2],[2,3]]
+        tn3 = [[3,2],[2,1]]
+        tn4 = [[3,2],[2,3]]
+
+        assert(all([t in ns1 for t in tn1]))
+        assert(all([t in ns2 for t in tn2]))
+        assert(all([t in ns3 for t in tn3]))
+        assert(all([t in ns4 for t in tn4]))
+
+    def test_sides(self):
+        board = array([[0,0,0],
+                       [0,0,0],
+                       [0,0,0]])
+        move1 = (1, [1,2])
+        move2 = (1, [2,1])
+        move3 = (1, [3,2])
+        move4 = (1, [2,3])
+
+        ns1 = neighbors(move1, board)
+        ns2 = neighbors(move2, board)
+        ns3 = neighbors(move3, board)
+        ns4 = neighbors(move4, board)
+
+        tn1 = [[1,1],[1,3],[2,2]]
+        tn2 = [[1,1],[3,1],[2,2]]
+        tn3 = [[3,1],[3,3],[2,2]]
+        tn4 = [[1,3],[3,3],[2,2]]
+
+        assert(all([t in ns1 for t in tn1]))
+        assert(all([t in ns2 for t in tn2]))
+        assert(all([t in ns3 for t in tn3]))
+        assert(all([t in ns4 for t in tn4]))
+
+    def test_center(self):
+        board = array([[0,0,0],
+                       [0,0,0],
+                       [0,0,0]])
+        move1 = (1, [2,2])
+
+        ns1 = neighbors(move1, board)
+
+        tn1 = [[1,2],[2,1],[3,2],[2,3]]
+
+        assert(all([t in ns1 for t in tn1]))

@@ -64,6 +64,43 @@ def endgame(moves, nplayers):
     print(last_moves)
     return(all([l[1] == PASS for l in last_moves]))
 
+def neighbors(move, board):
+    # TODO
+    # Return the positions of neighbors of a stone, handles edge cases
+    # Note: moves are (int, [X, Y])
+    # NOTE: only works for 2 Dimensions
+
+    x, y = move[1]
+    m = np.shape(board)[1]
+    r = None
+
+    if(x == 1):
+        if(y == 1):
+            r = [[1,2], [2,1]]
+        elif(y == m):
+            r = [[1,m-1], [2,m]]
+        else:
+            r = [[1,y+1], [1,y-1], [2,y]]
+
+    elif(x == m):
+        if(y == 1):
+            r = [[m,2], [m-1,1]]
+        elif(y == m):
+            r = [[m,m-1], [m-1,m]]
+        else:
+            r = [[m,y+1], [m,y-1], [m-1,y]]
+
+    else:
+        r = [[x,y+1], [x,y-1], [x+1,y], [x-1,y]]
+
+    return(r)
+
+def chain(move, board):
+    # TODO
+    # Return the locations of the chain of stones connected to the stone placed
+    #   in <move>
+    pass
+
 def liberties(move, board):
     # TODO
     # Return the number of liberties of a stone placed on the board
@@ -90,10 +127,6 @@ def valid_move(move, board):
     for i in range(DIMENSIONS - 1):
         subboard = subboard[move_loc[i], :]
     board_at_loc = subboard[move_loc[DIMENSIONS - 1]]
-
-    print(board)
-    print(move)
-    print(board_at_loc)
 
     if(board_at_loc != 0):
         return False
