@@ -6,6 +6,7 @@ May 23, 2017
     * get game logic working for play_in_term
     *** save, load games
     ** make class Move()
+    ** Further instructions / docs for using this applet
 
 Oct 17, 2015
     * check that I'm actually recording states
