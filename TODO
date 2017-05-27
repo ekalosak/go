@@ -1,6 +1,7 @@
 Priority *, **, ***
 
 May 23, 2017
-    * get basic stone placement working for play_in_term
+    * fill out sketched functions
+    ** write docs for functions
+    ** write further instructions for using this applet
     *** save, load games
-    ** Further instructions / docs for using this applet
