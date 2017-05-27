@@ -1,7 +1,7 @@
 # uses nosetests
 
 # Import subroutines to test
-from play_in_terminal import endgame, valid_move, neighbors, liberties,
+from play_in_terminal import endgame, valid_move, neighbors, liberties,\
     captured, chain
 
 # Import constants used
@@ -18,22 +18,18 @@ class TestEndgame:
     #       denoting the position of the stone placed
 
     def test_trivial_endgame(self):
-        moves = [(1, PASS)]
-        assert(endgame(moves, 1)) # a pass with one player ends the game
-
-    def test_trivial_endgame2(self):
         moves = [(1, PASS), (2, PASS)]
-        assert(endgame(moves, 2)) # two passes with two players ends the game
+        assert(endgame(moves)) # two passes with two players ends the game
 
     def test_regular_endgame(self):
         # A case with some play before it
         moves = [(1, [1,1]), (2, [1,2]), (1, PASS), (2, PASS)]
-        assert(endgame(moves, 2)) # game ends when everyone passes
+        assert(endgame(moves)) # game ends when everyone passes
 
     def test_not_endgame(self):
         # A failure case with some play before it
         moves = [(1, [1,1]), (2, [1,2]), (1, PASS), (2, [2,2])]
-        assert(not endgame(moves, 2)) # game ends when everyone passes
+        assert(not endgame(moves)) # game ends when everyone passes
 
 
 class TestValidMove:
@@ -46,7 +42,6 @@ class TestValidMove:
         move2 = (2, [2,2]) # player 2 tries to play in center, surrounded
         assert(valid_move(move1, board))
         assert(not valid_move(move2, board))
-        assert(False)
 
     def test_double_occupation(self):
         board = array([[1, 0], [0, 0]]) # stone only in upper left corner
@@ -205,7 +200,15 @@ class TestCaptured:
         assert(captured(move, board) == [(2, [2,2])])
 
     def test_chain_capture(self):
-        assert(False)
+        board = array([[1,1,0],
+                        [1,2,1],
+                        [2,0,0]])
+
+        move = (2, [1,3])
+        calc_cap = captured(move=move, board=board)
+        true_cap = [(1, [1,1]), (1, [1,2]), (1, [2, 1])]
+        assert(all([t in calc_cap for t in true_cap]))
+        assert(len(true_cap) == len(calc_cap))
 
     def test_no_capture(self):
         board = array([[0,1,0],
