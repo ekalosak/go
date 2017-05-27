@@ -38,7 +38,13 @@ class TestEndgame:
 class TestValidMove:
 
     def test_surrounded_stones(self):
-        # TODO
+        board = array([[0,1,0],
+                       [1,0,1],
+                       [0,1,0]])
+        move1 = (1, [2,2]) # player 1 tries to play in center, ok
+        move2 = (2, [2,2]) # player 2 tries to play in center, surrounded
+        assert(valid_move(move1, board))
+        assert(not valid_move(move2, board))
         assert(False)
 
     def test_double_occupation(self):
