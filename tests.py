@@ -83,13 +83,15 @@ class TestLiberties:
         assert(liberties(move, board) == 3)
 
     def test_complicated_chain(self):
-        board = array([[0,0,0,0,0],
-                       [0,0,0,0,0],
-                       [0,0,0,0,0],
-                       [0,0,0,0,0],
-                       [0,0,0,0,0]])
-        #TODO more tests here
-        raise(NotImplementedError)
+        board = array([[1,1,0,0,0],
+                       [0,1,1,0,0],
+                       [0,0,1,0,0],
+                       [0,0,1,0,0],
+                       [0,0,1,0,0]])
+        move1 = (1, [3,1])
+        move2 = (1, [4,5])
+        assert(liberties(move1, board) == 9)
+        assert(liberties(move2, board) == 9)
 
 class TestNeighbors:
 
