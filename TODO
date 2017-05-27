@@ -1,31 +1,6 @@
 Priority *, **, ***
 
 May 23, 2017
-    * write unit tests for utils.py
     * get basic stone placement working for play_in_term
-    * get game logic working for play_in_term
     *** save, load games
-    ** make class Move()
     ** Further instructions / docs for using this applet
-
-Oct 17, 2015
-    * check that I'm actually recording states
-    * add a scoreboard
-    ** refactor much of Board functionality to algorithms.py
-    ** add validation functions to classes
-    * refactor many functions to not have such sloppy objet access
-    *** if move is suicidal, check to see if it captures anything
-    * implement undo
-    ** implement pass
-    * save games played with scores for learning and reloading
-
-    DONE:
-        implemented __repr__
-        Make grid draw, selector draw, stones draw
-        check for state validity
-        add a logger
-        add pass to move options
-        overwrote__eq__
-        fix non-capture bug
-        fix bug where it thinks a move is invalid if a stone is surrounded by
-            its own allies
