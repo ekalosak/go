@@ -210,8 +210,7 @@ if __name__ == "__main__":
 
         # Switch players, increment turns, and other cleanup
         log.debug("End of turn {}".format(turn))
-        pdb.set_trace()
-        player = ((player + 1) % PLAYERS) + 1
+        player = (player % PLAYERS) + 1
         turn = turn + 1
 
     sys.exit(0)
