@@ -157,7 +157,7 @@ if __name__ == "__main__":
             player, MOVE_INSTRUCTIONS))
         user_input = input()
         log.debug("Player {} gave input <{}>".format(
-            player, move))
+            player, user_input))
 
         # Determine whether it's a valid input
         if user_input == PASS:
