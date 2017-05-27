@@ -202,4 +202,15 @@ class TestCaptured:
                         [0,0,0]])
 
         move = (1, [2,3])
-        assert(captured(move, board) == [[2,2]])
+        assert(captured(move, board) == [(2, [2,2])])
+
+    def test_chain_capture(self):
+        assert(False)
+
+    def test_no_capture(self):
+        board = array([[0,1,0],
+                        [1,2,1],
+                        [0,0,0]])
+
+        move = (1, [1,1])
+        assert(captured(move, board) == [])
