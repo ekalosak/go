@@ -115,7 +115,7 @@ def captured(move, board):
     # TODO
     # NOTE will only work properly for 2 players right now
     # Return the stones captured by playing <move> on <board>
-    # return = list of lists e.g. [[1,1], [1,2]] for stones at those locs
+    # return = list of lists e.g. [(2, [1,1]), (2, [1,2])] for stones at those locs
     pass
 
 def valid_move(move, board):
@@ -129,14 +129,9 @@ def valid_move(move, board):
 
     # Occupied spot cannot be twice occupied
     # i.e cannot play on a stone already there
-    move_loc = [m - 1 for m in move[1]]
-    # subboard = board
-    # for i in range(DIMENSIONS - 1): # This loop collapses the potentially
-    #                                 # multimdimensional go board
-    #     subboard = subboard[move_loc[i], :]
-    # board_at_loc = subboard[move_loc[DIMENSIONS - 1]]
-    board_at_loc = board[tuple(move_loc)]
 
+    move_loc = [m - 1 for m in move[1]]
+    board_at_loc = board[tuple(move_loc)]
     if(board_at_loc != 0):
         return False
 
@@ -188,11 +183,10 @@ if __name__ == "__main__":
 
         ## Determine whether move is valid and play it if it is
         if move != PASS:
-            if valid_move(board, move):
-                # If it is, apply move and calculate consequences
-                # TODO Put stone on board
+            if valid_move(board=board, move=move):
+                # Put stone on board
+                board[tuple([m - 1 for m in move[1]])] = move[0]
                 # TODO Remove captured stones
-                pass
             else:
                 # If it isn't, ask for a different move
                 print("Invalid move: <{}>, please try another".format(
