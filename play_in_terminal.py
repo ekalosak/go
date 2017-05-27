@@ -101,7 +101,7 @@ def neighbors(move, board):
     else:
         r = [[y+1,x], [y-1,x], [y,x+1], [y,x-1]]
 
-    log.debug("Neighbors of <{}> are <{}>".format(move, r))
+    # log.debug("Neighbors of <{}> are <{}>".format(move, r))
 
     return(r)
 
@@ -111,11 +111,14 @@ def chain(move, board):
     #   in <move>
     pass
 
-def liberties(move, board):
-    # TODO
-    # Return the number of liberties of a stone placed on the board
-    #   more or less depth first search of a chain of stones connected to move
-    pass
+def stone_liberties(move, board):
+    # Return the number of liberties of a single stone placed on the board
+    pdb.set_trace()
+    return(sum([move[0] == n[0] for n in neighbors(move=move, board=board)]))
+
+def chain_liberties(move, board):
+    # Return the number of liberties of a chain of stones placed on the board
+    return(sum([stone_liberties(s) for s in chain(move=move, board=board)]))
 
 def captured(move, board):
     # NOTE will only work properly for 2 players right now
@@ -125,7 +128,7 @@ def captured(move, board):
     r = []
     for n in neighbors(move=move, board=board):
         if(not n[0] == move[0]): # if it's not your stone
-            if(liberties(move=n, board=board) == 0): # and it's dead
+            if(stone_liberties(move=n, board=board) == 0): # and it's dead
                 r += chain(board=board, move=n) # add its chain to return
     return r
 
