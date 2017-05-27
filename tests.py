@@ -162,5 +162,29 @@ class TestNeighbors:
 
 class TestChain:
 
+    def test_small_chain(self):
+        board = array([[0,1,0],
+                       [1,0,1],
+                       [0,0,0]])
+        move = (1, [2,2])
+        true_chain = [[1,2], [2,1], [2,2], [3,2]]
+        calculated_chain = chain(move, board)
+        [assert(ch in calculated_chain) for ch in true_chain]
+        assert(len(true_chain) == len(calculated_chain))
+
+    def test_chain_with_other_colors(self):
+        board = array([[2,1,2],
+                       [1,0,1],
+                       [2,2,0]])
+        move = (1, [2,2])
+        true_chain = [[1,2], [2,1], [2,2], [3,2]]
+        calculated_chain = chain(move, board)
+        [assert(ch in calculated_chain) for ch in true_chain]
+        assert(len(true_chain) == len(calculated_chain))
+
     def test_trivial_chain(self):
-        pass
+        board = array([[0,0,0],
+                       [0,0,0],
+                       [0,0,0]])
+        move = (1, [1,1])
+        assert(chain(move, board) == [[1,1]])
