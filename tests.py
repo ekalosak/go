@@ -65,28 +65,24 @@ class TestLiberties:
                        [0,0,0],
                        [0,0,0]])
 
-        move = (1, [2,2]) # player 1 placing a stone at (2,2) the center
-        assert(liberties(move, board) == 4)
-
-        move = (1, [3,2])
-        assert(liberties(move, board) == 3)
-
-        move = (1, [1,1])
-        assert(liberties(move, board) == 2)
+        move1 = (1, [2,2]) # player 1 placing a stone at (2,2) the center
+        move2 = (1, [3,2])
+        move3 = (1, [1,1])
+        assert(liberties(move1, board) == 4)
+        assert(liberties(move2, board) == 3)
+        assert(liberties(move3, board) == 2)
 
     def test_chain_stones(self):
         board = array([[0,1,0],
                        [1,0,0],
                        [0,0,0]])
 
-        move = (1, [2,2])
-        assert(liberties(move, board) == 5)
-
-        move = (1, [1,1])
-        assert(liberties(move, board) == 3)
-
-        move = (1, [1,3])
-        assert(liberties(move, board) == 3)
+        move1 = (1, [2,2])
+        move2 = (1, [1,1])
+        move3 = (1, [1,3])
+        assert(liberties(move1, board) == 5)
+        assert(liberties(move2, board) == 3)
+        assert(liberties(move3, board) == 3)
 
     def test_complicated_chain(self):
         board = array([[1,1,0,0,0],
@@ -98,6 +94,14 @@ class TestLiberties:
         move2 = (1, [4,5])
         assert(liberties(move1, board) == 9)
         assert(liberties(move2, board) == 9)
+
+    def test_with_other_players(self):
+        board = array([[0,1,0],
+                       [1,0,2],
+                       [2,2,2]])
+        move = (1, [2,2])
+        assert(liberties(move, board) == 2)
+
 
 class TestNeighbors:
 
@@ -188,3 +192,13 @@ class TestChain:
                        [0,0,0]])
         move = (1, [1,1])
         assert(chain(move, board) == [[1,1]])
+
+class TestCaptured:
+
+    def test_simple_capture(self):
+        board = array([[0,1,0],
+                        [1,2,1],
+                        [0,0,0]])
+
+        move = (1, [2,3])
+        assert(captured(move, board) == [[2,2]])

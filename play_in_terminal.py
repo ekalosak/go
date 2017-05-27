@@ -29,7 +29,7 @@ log.debug("Libraries successfully imported")
 ## Parameterize game
 
 PASS = 'p'
-MOVE_INSTRUCTIONS = "'X Y' or '{}' for pass".format(PASS)
+MOVE_INSTRUCTIONS = "'Y X' or '{}' for pass".format(PASS)
 BOARD_SIZE = 9 # Make an X by X sized go board
 DIMENSIONS = 2 # Dimensionality of the board, if not 2, YMMV
 PLAYERS = 2 # Players, usually 2, if more or less YMMV
@@ -42,6 +42,7 @@ game_over = False
 player = 1
 shape = [BOARD_SIZE for b in range(DIMENSIONS)]
 board = np.zeros(shape, dtype=np.int8)
+boards = []
 move = None
 moves = []
 bottom_guide = np.arange(BOARD_SIZE) + 1
@@ -70,7 +71,7 @@ def neighbors(move, board):
     # Note: moves are (int, [X, Y])
     # NOTE: only works for 2 Dimensions
 
-    x, y = move[1]
+    y, x = move[1]
     m = np.shape(board)[1]
     r = None
 
@@ -109,7 +110,9 @@ def liberties(move, board):
 
 def captured(move, board):
     # TODO
+    # NOTE will only work properly for 2 players right now
     # Return the stones captured by playing <move> on <board>
+    # return = list of lists e.g. [[1,1], [1,2]] for stones at those locs
     pass
 
 def valid_move(move, board):
@@ -122,19 +125,21 @@ def valid_move(move, board):
     #   valid : (bool) whther the move is valid or not
 
     # Occupied spot cannot be twice occupied
+    # i.e cannot play on a stone already there
     move_loc = [m - 1 for m in move[1]]
-    subboard = board
-    for i in range(DIMENSIONS - 1):
-        subboard = subboard[move_loc[i], :]
-    board_at_loc = subboard[move_loc[DIMENSIONS - 1]]
+    # subboard = board
+    # for i in range(DIMENSIONS - 1): # This loop collapses the potentially
+    #                                 # multimdimensional go board
+    #     subboard = subboard[move_loc[i], :]
+    # board_at_loc = subboard[move_loc[DIMENSIONS - 1]]
+    board_at_loc = board[tuple(move_loc)]
 
     if(board_at_loc != 0):
         return False
 
     # TODO
     # Cannot kill self or own stones
-
-    # Cannot return board to previous state (NOTE not implemented)
+    # Cannot return board to previous state
 
     return True
 
@@ -162,14 +167,13 @@ if __name__ == "__main__":
         # Determine whether it's a valid input
         if user_input == PASS:
             move = PASS
-
         else:
             try:
                 move = [int(i) for i in user_input.split()]
                 within_bounds = [i > 0 and i <= BOARD_SIZE for i in move]
+                assert(all(within_bounds))
                 log.debug("Move is <{}> within bounds <{}>".format(
                     move, within_bounds))
-                assert(all(within_bounds))
 
             except Exception as e:
                 log.debug("User input <{}> raised Exception <{}>".format(
@@ -178,25 +182,33 @@ if __name__ == "__main__":
                     user_input))
                 continue # let the same player try again
 
-        # Update the game log
-        moves.append((player, move))
+        # Check that the move is valid under game logic
+        if(not valid(move, board)):
+            log.debug("User move <{}> invalid".format(move))
+            print("Move invalid, please try another")
+            continue # let the same player try again
 
         # Determine whether endgame conditions are met and act accordingly
-        game_over = endgame(moves, PLAYERS)
-        if(game_over):
+        if(endgame(moves, PLAYERS)):
             log.debug("Game has ended after {} turns".format(turn))
             break
 
-        # Determine whether move is valid
+        ## Determine whether move is valid and play it if it is
         if move != PASS:
             if valid_move(board, move):
                 # If it is, apply move and calculate consequences
-                log.debug("TODO: apply the move to the board")
+                # TODO Put stone on board
+                # TODO Remove captured stones
+                pass
             else:
                 # If it isn't, ask for a different move
-                print("Invalid move: {}".format(
+                print("Invalid move: <{}>, please try another".format(
                     user_input))
                 continue # let the same player try again
+
+        # Update the game log
+        moves.append((player, move))
+        boards.append(board)
 
         # Switch players, increment turns, and other cleanup
         log.debug("End of turn {}".format(turn))
