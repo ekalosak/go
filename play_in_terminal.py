@@ -52,7 +52,7 @@ log.debug("Setup game objects")
 
 ## Subroutines
 
-def endgame(moves, nplayers):
+def endgame(moves):
     ## Determine whether the move <move> ends the game
     # Input
     #   moves : (list(tuple(int, move))) moves already played
@@ -61,9 +61,12 @@ def endgame(moves, nplayers):
     # Output
     #   game_over : (bool) whether <move> ended the game
 
-    last_moves = moves[-nplayers:]
-    print(last_moves)
-    return(all([l[1] == PASS for l in last_moves]))
+    if(len(moves) < PLAYERS):
+        return(False)
+
+    last_moves = moves[-PLAYERS:]
+    were_pass = [l[1] == PASS for l in last_moves]
+    return(all(were_pass))
 
 def neighbors(move, board):
     # TODO
@@ -169,9 +172,10 @@ if __name__ == "__main__":
             move = PASS
         else:
             try:
-                move = [int(i) for i in user_input.split()]
-                within_bounds = [i > 0 and i <= BOARD_SIZE for i in move]
+                move_loc = [int(i) for i in user_input.split()]
+                within_bounds = [i > 0 and i <= BOARD_SIZE for i in move_loc]
                 assert(all(within_bounds))
+                move = (player, move_loc)
                 log.debug("Move is <{}> within bounds <{}>".format(
                     move, within_bounds))
 
@@ -181,17 +185,6 @@ if __name__ == "__main__":
                 print("Invalid user input: {}".format(
                     user_input))
                 continue # let the same player try again
-
-        # Check that the move is valid under game logic
-        if(not valid(move, board)):
-            log.debug("User move <{}> invalid".format(move))
-            print("Move invalid, please try another")
-            continue # let the same player try again
-
-        # Determine whether endgame conditions are met and act accordingly
-        if(endgame(moves, PLAYERS)):
-            log.debug("Game has ended after {} turns".format(turn))
-            break
 
         ## Determine whether move is valid and play it if it is
         if move != PASS:
@@ -210,8 +203,14 @@ if __name__ == "__main__":
         moves.append((player, move))
         boards.append(board)
 
+        # Determine whether endgame conditions are met and act accordingly
+        if(endgame(moves)):
+            log.debug("Game has ended after {} turns".format(turn))
+            break
+
         # Switch players, increment turns, and other cleanup
         log.debug("End of turn {}".format(turn))
+        pdb.set_trace()
         player = ((player + 1) % PLAYERS) + 1
         turn = turn + 1
 
