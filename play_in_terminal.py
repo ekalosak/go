@@ -45,6 +45,7 @@ board = np.zeros(shape, dtype=np.int8)
 boards = []
 move = None
 moves = []
+cap_stones = np.zeros((PLAYERS, PLAYERS))
 bottom_guide = np.arange(BOARD_SIZE) + 1
 side_guide = np.array([np.arange(BOARD_SIZE + 1) + 1]).T
 
@@ -69,33 +70,38 @@ def endgame(moves):
     return(all(were_pass))
 
 def neighbors(move, board):
-    # TODO
     # Return the positions of neighbors of a stone, handles edge cases
-    # Note: moves are (int, [X, Y])
+    # Note: moves are (int, [Y, X])
     # NOTE: only works for 2 Dimensions
 
     y, x = move[1]
     m = np.shape(board)[1]
     r = None
 
-    if(x == 1):
-        if(y == 1):
-            r = [[1,2], [2,1]]
-        elif(y == m):
-            r = [[1,m-1], [2,m]]
-        else:
-            r = [[1,y+1], [1,y-1], [2,y]]
+    # corners
+    if(x == 1 and y == 1):
+        r = [[1,2], [2,1]]
+    elif(x == 1 and y == m):
+        r = [[m-1,1], [m,2]]
+    elif(x == m and y == 1):
+        r = [[2,m], [1,m-1]]
+    elif(x == m and y == m):
+        r = [[m,m-1], [m-1,m]]
 
+    # sides
+    if(x == 1):
+        r = [[y+1,1], [y-1,1], [y,2]]
     elif(x == m):
-        if(y == 1):
-            r = [[m,2], [m-1,1]]
-        elif(y == m):
-            r = [[m,m-1], [m-1,m]]
-        else:
-            r = [[m,y+1], [m,y-1], [m-1,y]]
+        r = [[y+1,m], [y-1,m], [y,m-1]]
+    elif(y == 1):
+        r = [[y,x-1], [y,x+1], [y+1,x]]
+    elif(y == m):
+        r = [[y,x-1], [y,x+1], [y-1,x]]
 
     else:
-        r = [[x,y+1], [x,y-1], [x+1,y], [x-1,y]]
+        r = [[y+1,x], [y-1,x], [y,x+1], [y,x-1]]
+
+    log.debug("Neighbors of <{}> are <{}>".format(move, r))
 
     return(r)
 
@@ -112,11 +118,16 @@ def liberties(move, board):
     pass
 
 def captured(move, board):
-    # TODO
     # NOTE will only work properly for 2 players right now
     # Return the stones captured by playing <move> on <board>
-    # return = list of lists e.g. [(2, [1,1]), (2, [1,2])] for stones at those locs
-    pass
+    # return = list of lists e.g. [(2, [1,1]), (2, [1,2])]
+
+    r = []
+    for n in neighbors(move=move, board=board):
+        if(not n[0] == move[0]): # if it's not your stone
+            if(liberties(move=n, board=board) == 0): # and it's dead
+                r += chain(board=board, move=n) # add its chain to return
+    return r
 
 def valid_move(move, board):
 
@@ -186,9 +197,12 @@ if __name__ == "__main__":
             if valid_move(board=board, move=move):
                 # Put stone on board
                 board[tuple([m - 1 for m in move[1]])] = move[0]
-                # TODO Remove captured stones
+                # Remove captured stones
+                for mv in captured(board=board, move=move):
+                    cap_stones[player, mv[0]] += 1 # record the capture
+                    mvloc = tuple([m-1 for m in mv[1]])
+                    board[mvloc] = 0
             else:
-                # If it isn't, ask for a different move
                 print("Invalid move: <{}>, please try another".format(
                     user_input))
                 continue # let the same player try again
